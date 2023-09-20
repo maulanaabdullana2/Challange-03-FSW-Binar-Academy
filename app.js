@@ -1,69 +1,114 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-
 const app = express();
-const port = 8080;
+const port = process.env.port || 8080;
+const fs = require('fs');
+const { uuid } = require('uuidv4');
 
-app.use(bodyParser.json());
+app.use(express.json())
+
 
 // Data koleksi mobil
-let cars = require('./data/cars.json');
+const cars = JSON.parse(fs.readFileSync(`${__dirname}/data/cars.json`))
 
 //Membuka root
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'ping successfully' });
+app.get('/api/v1/', (req, res) => {
+    res.status(200).json({ 
+        message: 'ping successfully' 
+    });
   });
   
 
 
 // Mendapatkan semua mobil
-app.get('/cars', (req, res) => {
-    res.json(cars);
+app.get('/api/v1/cars', (req, res) => {
+    res.status(200).json({
+        status : 'success',
+        data:{
+            cars
+        }
+
+    });
 });
 
-// Mendapatkan mobil berdasarkan ID
-app.get('/cars/:id', (req, res) => {
 
-    const carsId = req.params.id
-    const car = cars.find(c => c.id === carsId)
-    if (car) {
-        res.json(car)
-    } else {
-        res.status(404).json({ message: 'data tidak ditemukan' })
+//Mmembuat Data Baru
+app.post('/api/v1/cars/',(req,res)=>{
+    const newId = uuid()
+    const newdata = Object.assign({id:newId},req.body)
+    cars.push(newdata)
+    fs.writeFile(`${__dirname}/data/cars.json`,JSON.stringify(cars),err =>{
+        res.status(201).json({
+            message:'201',
+            data:{
+                car:cars
+            }
+        })
+    })
+
+})
+
+
+//Mendapatkan Mobil Berdasarkan Id
+app.get('/api/v1/cars/:id',(req,res)=>{
+    const id = req.params.id
+    const car = cars.find(el => el.id === id)
+    if(!car){
+        return res.status(404).json({
+            status:'failed',
+            message: "Data Not found"
+        })
     }
-});
+    res.status(200).json({
+        status: '200',
+        data:{
+            car
+        }
+    })
+})
 
-// Menambahkan mobil baru
-app.post('/cars', (req, res) => {
-    const newcar = req.body
-    cars.push(newcar)
-    res.status(201).json(newcar)
-});
-
-// Memperbarui mobil berdasarkan ID
-app.put('/cars/:id', (req, res) => {
-    const carId = req.params.id;
-    const updatedCar = req.body;
-    const index = cars.findIndex(car => car.id === carId);
-    if (index !== -1) {
-        cars[index] = updatedCar;
-        res.json(updatedCar);
-    } else {
-        res.status(404).json({ message: 'Mobil tidak ditemukan' });
+//Mengubah data berdasarkan ID
+app.patch('/api/v1/cars/:id',(req,res)=>{
+    const id = req.params.id 
+    const index = cars.findIndex(el => el.id === id)
+    if(index === -1){
+        return res.status(404).json({
+            status: 'Failed',
+            message: `Data With ${id} not found`
+        })
     }
-});
+    cars[index] = {...cars[index], ...req.body}
+    fs.writeFile(`${__dirname}/data/cars.json`,JSON.stringify(cars),err =>{
+        res.status(200).json({
+            status: '200',
+            message: `Data ${id} berhasil di edit`,
+            data:{
+                car:cars[index]
+            }
+        })
+    })
+    
+})
 
-// Menghapus mobil berdasarkan ID
-app.delete('/cars/:id', (req, res) => {
-    const carId = req.params.id;
-    const index = cars.findIndex(car => car.id === carId);
-    if (index !== -1) {
-        const deletedCar = cars.splice(index, 1)[0];
-        res.status(204).json(deletedCar);
-    } else {
-        res.status(404).json({ message: 'Mobil tidak ditemukan' });
+
+//Menghapus data
+app.delete('/api/v1/cars/:id',(req,res)=>{
+    const id = req.params.id
+    const index = cars.findIndex(el => el.id === id)
+    if(index === -1){
+        return res.status(404).json({
+            status: 'Failed',
+            message:`Data ${id} not found`
+        })
     }
-});
+    cars.splice(index, 1)
+    fs.writeFile(`${__dirname}/data/cars.json`,JSON.stringify(cars),err =>{
+        res.status(200).json({
+            status: 'sucess',
+            message: `Berhasil Dihapus`,
+            data: null
+        })
+    })
+})
 
 app.listen(port, () => {
     console.log(`Server berjalan di port ${port}`);
