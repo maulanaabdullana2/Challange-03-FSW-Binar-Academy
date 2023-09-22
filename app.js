@@ -1,8 +1,10 @@
+const fs = require("fs");
 const express = require("express");
 const app = express();
 const port = process.env.port || 8080;
-const fs = require("fs");
+const morgan = require("morgan");
 
+app.use(morgan("dev"));
 app.use(express.json());
 
 // Data koleksi mobil
