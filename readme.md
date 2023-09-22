@@ -1,7 +1,8 @@
 ## Run Website
 
 ```
-1. npm run dev
-2. localhost:8080
+1. npm install
+2. npm run dev
+3. localhost:3000
 
 ```
