@@ -40,42 +40,54 @@ const newpostCar = (req, res) => {
   const newId = cars[cars.length - 1].id + 1;
   const newdata = Object.assign({ id: newId }, req.body);
   cars.push(newdata);
-  fs.writeFile(`${__dirname}/data/cars.json`, JSON.stringify(cars), (err) => {
-    res.status(201).json({
-      message: "201",
-      data: {
-        car: cars,
-      },
-    });
-  });
+  fs.writeFile(
+    `${__dirname}/../data/cars.json`,
+    JSON.stringify(cars),
+    (err) => {
+      res.status(201).json({
+        message: "201",
+        data: {
+          car: cars,
+        },
+      });
+    }
+  );
 };
 
 const editDataCars = (req, res) => {
   const id = req.params.id;
   const index = cars.findIndex((el) => el.id === id);
   cars[index] = { ...cars[index], ...req.body };
-  fs.writeFile(`${__dirname}/data/cars.json`, JSON.stringify(cars), (err) => {
-    res.status(200).json({
-      status: "200",
-      message: `Data ${id} berhasil di edit`,
-      data: {
-        car: cars[index],
-      },
-    });
-  });
+  fs.writeFile(
+    `${__dirname}/../data/cars.json`,
+    JSON.stringify(cars),
+    (err) => {
+      res.status(200).json({
+        status: "200",
+        message: `Data ${id} berhasil di edit`,
+        data: {
+          car: cars[index],
+        },
+      });
+    }
+  );
 };
 
 const deleteCars = (req, res) => {
   const id = req.params.id;
   const index = cars.findIndex((el) => el.id === id);
   cars.splice(index, 1);
-  fs.writeFile(`${__dirname}/data/cars.json`, JSON.stringify(cars), (err) => {
-    res.status(200).json({
-      status: "sucess",
-      message: `Berhasil Dihapus`,
-      data: null,
-    });
-  });
+  fs.writeFile(
+    `${__dirname}/../data/cars.json`,
+    JSON.stringify(cars),
+    (err) => {
+      res.status(200).json({
+        status: "sucess",
+        message: `Berhasil Dihapus`,
+        data: null,
+      });
+    }
+  );
 };
 
 module.exports = {
